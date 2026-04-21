@@ -36,3 +36,4 @@ build/*
 
 !tmp/.gitkeep
 !build/.gitkeep
+.vscode

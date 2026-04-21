@@ -1,18 +1,35 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/rms-diego/book-my-session/internal/middleware"
+	"github.com/rms-diego/book-my-session/pkg/config"
+	"github.com/rms-diego/book-my-session/pkg/logger"
 )
 
 func main() {
-	router := gin.Default()
+	gin.DisableConsoleColor()
+	gin.SetMode(gin.ReleaseMode)
 
-	s := &http.Server{
-		Addr:    ":8080",
-		Handler: router,
+	r := gin.New()
+	if err := logger.Init(); err != nil {
+		panic(err)
 	}
 
+	if err := config.Init(); err != nil {
+		panic(err)
+	}
+
+	r.Use(middleware.LogsMiddleware(logger.Log))
+	s := &http.Server{
+		Addr:    ":" + config.Env.PORT,
+		Handler: r,
+	}
+
+	logger.Log.Info("Server is running")
+	logger.Log.Info(fmt.Sprintf("Address: http://localhost:%v", config.Env.PORT))
 	s.ListenAndServe()
 }
