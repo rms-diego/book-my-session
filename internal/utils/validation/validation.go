@@ -1,10 +1,11 @@
 package validation
 
 import (
-	"errors"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gookit/validate"
+	"github.com/rms-diego/book-my-session/pkg/exception"
 )
 
 // BindAndValidate deserializes the JSON request body into req and runs the
@@ -13,12 +14,12 @@ import (
 // or missing required fields, or a validation error if a rule is violated.
 func BindAndValidate[T any](c *gin.Context, req *T) error {
 	if err := c.ShouldBindJSON(req); err != nil {
-		return err
+		return exception.NewException(err.Error(), http.StatusBadRequest)
 	}
 
 	v := validate.Struct(req)
 	if !v.Validate() {
-		return errors.New(v.Errors.One())
+		return exception.NewException(v.Errors.One(), http.StatusBadRequest)
 	}
 
 	return nil

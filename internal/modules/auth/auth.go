@@ -32,4 +32,5 @@ func NewAuthModule() AuthModule {
 
 func (m *authModule) InitRoutes(r *gin.RouterGroup) {
 	r.POST("/sign-up", m.handler.SignUp)
+	r.POST("/sign-in", m.handler.SignIn)
 }

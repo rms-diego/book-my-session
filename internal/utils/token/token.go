@@ -46,11 +46,10 @@ func DecodeToken[T jwt.Claims](tokenString string, claims T) (T, error) {
 	return token.Claims.(T), nil
 }
 
-func ValidateToken(token *jwt.Token) bool {
-	if claims, ok := token.Claims.(jwt.MapClaims); ok {
-		if exp, ok := claims["exp"].(float64); ok {
-			return time.Unix(int64(exp), 0).After(time.Now())
-		}
-	}
-	return false
+func ValidateToken(tokenString string) bool {
+	claims := jwt.MapClaims{}
+	_, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (any, error) {
+		return []byte(config.Env.JWT_SECRET), nil
+	})
+	return err == nil
 }

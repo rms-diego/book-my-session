@@ -1,8 +1,10 @@
 package authservice
 
 import (
+	"fmt"
 	"net/http"
 
+	"github.com/rms-diego/book-my-session/internal/model"
 	authdto "github.com/rms-diego/book-my-session/internal/modules/auth/dto"
 	authrepository "github.com/rms-diego/book-my-session/internal/modules/auth/repository"
 	"github.com/rms-diego/book-my-session/internal/utils/token"
@@ -16,6 +18,7 @@ type authService struct {
 
 type AuthService interface {
 	SignUp(dto authdto.SignUpRequest) (*string, error)
+	SignIn(dto authdto.SignInRequest) (*string, error)
 }
 
 func NewAuthService(repository authrepository.AuthRepository) AuthService {
@@ -50,6 +53,36 @@ func (s *authService) SignUp(data authdto.SignUpRequest) (*string, error) {
 	}
 
 	strToken, err := token.GenerateToken(*uc)
+	if err != nil {
+		return nil, err
+	}
+
+	return &strToken, nil
+}
+
+func (s *authService) SignIn(data authdto.SignInRequest) (*string, error) {
+	fmt.Println("HERREEEEE")
+	user, err := s.repository.FindByEmail(data.Email)
+	if err != nil {
+		return nil, err
+	}
+
+	if user == nil {
+		return nil, exception.NewException("user not found", http.StatusNotFound)
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(data.Password)); err != nil {
+		return nil, exception.NewException("invalid credentials", http.StatusUnauthorized)
+	}
+
+	uf := model.User{
+		ID:    user.ID,
+		Name:  user.Name,
+		Email: user.Email,
+		Role:  user.Role,
+	}
+
+	strToken, err := token.GenerateToken(uf)
 	if err != nil {
 		return nil, err
 	}
