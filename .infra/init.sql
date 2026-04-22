@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS films (
   updated_at TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS session(
+CREATE TABLE IF NOT EXISTS sessions(
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   seat_label VARCHAR(10) NOT NULL,
   started_at TIMESTAMP,
