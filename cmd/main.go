@@ -6,8 +6,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/rms-diego/book-my-session/internal/middleware"
+	"github.com/rms-diego/book-my-session/internal/routes"
 	"github.com/rms-diego/book-my-session/pkg/config"
 	"github.com/rms-diego/book-my-session/pkg/logger"
+	"go.uber.org/zap"
 )
 
 func main() {
@@ -24,6 +26,9 @@ func main() {
 	}
 
 	r.Use(middleware.LogsMiddleware(logger.Log))
+
+	routes.Init(r)
+
 	s := &http.Server{
 		Addr:    ":" + config.Env.PORT,
 		Handler: r,
@@ -31,5 +36,7 @@ func main() {
 
 	logger.Log.Info("Server is running")
 	logger.Log.Info(fmt.Sprintf("Address: http://localhost:%v", config.Env.PORT))
-	s.ListenAndServe()
+	if err := s.ListenAndServe(); err != nil {
+		logger.Log.Fatal("Server failed to start", zap.Error(err))
+	}
 }

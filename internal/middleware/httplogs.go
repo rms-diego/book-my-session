@@ -1,6 +1,8 @@
 package middleware
 
 import (
+	"bytes"
+	"io"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -12,17 +14,28 @@ func LogsMiddleware(logger *zap.Logger) gin.HandlerFunc {
 		start := time.Now()
 		path := c.Request.URL.Path
 		query := c.Request.URL.RawQuery
+		bodyPlaceholder := make(map[string]any)
+		var body any = nil
+
+		bodyBytes, err := io.ReadAll(c.Request.Body)
+		if err == nil {
+			c.Request.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
+		}
+
+		if err := c.ShouldBindJSON(&bodyPlaceholder); len(bodyBytes) > 0 && err == nil {
+			body = bodyPlaceholder
+		}
 
 		c.Next()
 
 		logger.Info("request",
+			zap.Int("status", c.Writer.Status()),
 			zap.String("method", c.Request.Method),
 			zap.String("path", path),
 			zap.String("query", query),
-			zap.Int("status", c.Writer.Status()),
+			zap.Any("body", body),
 			zap.Duration("latency", time.Since(start)),
 			zap.String("client_ip", c.ClientIP()),
-			zap.Int("body_size", c.Writer.Size()),
 		)
 
 		if len(c.Errors) > 0 {
