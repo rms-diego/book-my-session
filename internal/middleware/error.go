@@ -8,7 +8,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func ErrorHandler(logger *zap.Logger) gin.HandlerFunc {
+func ErrorMiddleware(logger *zap.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Next()
 

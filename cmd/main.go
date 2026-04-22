@@ -26,7 +26,7 @@ func main() {
 	}
 
 	r.Use(middleware.LogsMiddleware(logger.Log))
-	r.Use(middleware.ErrorHandler(logger.Log))
+	r.Use(middleware.ErrorMiddleware(logger.Log))
 
 	routes.Init(r)
 
