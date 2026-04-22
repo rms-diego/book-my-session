@@ -2,6 +2,8 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE TYPE user_role AS ENUM ('admin', 'user');
 
+CREATE TYPE film_language AS ENUM ('subtitled', 'dubbed');
+
 CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   name VARCHAR(255) NOT NULL,
@@ -16,6 +18,7 @@ CREATE TABLE IF NOT EXISTS films (
   title VARCHAR(255) NOT NULL,
   description TEXT,
   minutes_duration INT,
+  language film_language NOT NULL DEFAULT 'dubbed',
   thumbnail TEXT,
   release_date DATE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/rms-diego/book-my-session/internal/database"
 	"github.com/rms-diego/book-my-session/internal/middleware"
 	"github.com/rms-diego/book-my-session/internal/routes"
 	"github.com/rms-diego/book-my-session/pkg/config"
@@ -22,6 +23,10 @@ func main() {
 	}
 
 	if err := config.Init(); err != nil {
+		panic(err)
+	}
+
+	if err := database.Init(); err != nil {
 		panic(err)
 	}
 
