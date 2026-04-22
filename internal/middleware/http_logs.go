@@ -14,16 +14,16 @@ func LogsMiddleware(logger *zap.Logger) gin.HandlerFunc {
 		start := time.Now()
 		path := c.Request.URL.Path
 		query := c.Request.URL.RawQuery
-		bodyPlaceholder := make(map[string]any)
+		placeholder := make(map[string]any)
 		var body any = nil
 
-		bodyBytes, err := io.ReadAll(c.Request.Body)
+		rawBody, err := io.ReadAll(c.Request.Body)
 		if err == nil {
-			c.Request.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
+			c.Request.Body = io.NopCloser(bytes.NewBuffer(rawBody))
 		}
 
-		if err := c.ShouldBindJSON(&bodyPlaceholder); len(bodyBytes) > 0 && err == nil {
-			body = bodyPlaceholder
+		if err := c.ShouldBindJSON(&placeholder); len(rawBody) > 0 && err == nil {
+			body = placeholder
 		}
 
 		c.Next()
