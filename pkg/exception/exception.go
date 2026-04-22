@@ -10,7 +10,7 @@ type Exception interface {
 	Code() int
 }
 
-func NewCustomError(message string, status int) Exception {
+func NewException(message string, status int) Exception {
 	return &exception{message, status}
 }
 

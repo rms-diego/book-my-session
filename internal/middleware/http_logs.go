@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"bytes"
+	"encoding/json"
 	"io"
 	"time"
 
@@ -9,39 +10,62 @@ import (
 	"go.uber.org/zap"
 )
 
+var skipPaths = map[string]bool{
+	"/health": true,
+}
+
 func LogsMiddleware(logger *zap.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()
 		path := c.Request.URL.Path
-		query := c.Request.URL.RawQuery
-		placeholder := make(map[string]any)
-		var body any = nil
 
-		rawBody, err := io.ReadAll(c.Request.Body)
-		if err == nil {
-			c.Request.Body = io.NopCloser(bytes.NewBuffer(rawBody))
+		if skipPaths[path] {
+			c.Next()
+			return
 		}
 
-		if err := c.ShouldBindJSON(&placeholder); len(rawBody) > 0 && err == nil {
-			body = placeholder
+		var body map[string]any
+		if raw, err := io.ReadAll(c.Request.Body); err == nil {
+			c.Request.Body = io.NopCloser(bytes.NewBuffer(raw))
+			if len(raw) > 0 {
+				_ = json.Unmarshal(raw, &body)
+			}
 		}
 
 		c.Next()
 
-		logger.Info("request",
-			zap.Int("status", c.Writer.Status()),
-			zap.String("method", c.Request.Method),
-			zap.String("path", path),
-			zap.String("query", query),
-			zap.Any("body", body),
-			zap.Duration("latency", time.Since(start)),
-			zap.String("client_ip", c.ClientIP()),
-		)
+		status := c.Writer.Status()
+		latency := time.Since(start)
+		method := c.Request.Method
+		query := c.Request.URL.RawQuery
 
-		if len(c.Errors) > 0 {
-			for _, err := range c.Errors {
-				logger.Error("request error", zap.String("error", err.Error()))
-			}
+		fields := []zap.Field{
+			zap.Int("status", status),
+			zap.String("method", method),
+			zap.String("path", path),
+			zap.Duration("latency", latency),
+			zap.String("client_ip", c.ClientIP()),
+		}
+
+		if query != "" {
+			fields = append(fields, zap.String("query", query))
+		}
+
+		if status >= 400 && body != nil {
+			fields = append(fields, zap.Any("body", body))
+		}
+
+		for _, err := range c.Errors {
+			fields = append(fields, zap.String("error", err.Error()))
+		}
+
+		switch {
+		case status >= 500:
+			logger.Error("request", fields...)
+		case status >= 400:
+			logger.Warn("request", fields...)
+		default:
+			logger.Info("request", fields...)
 		}
 	}
 }
