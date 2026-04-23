@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/rms-diego/book-my-session/internal/modules/auth"
+	"github.com/rms-diego/book-my-session/internal/modules/films"
 )
 
 func Init(r *gin.Engine) {
@@ -16,4 +17,8 @@ func Init(r *gin.Engine) {
 	// auth routes
 	authModule := auth.NewAuthModule()
 	authModule.InitRoutes(r.Group("/auth"))
+
+	// films routes
+	filmsModule := films.NewFilmsModule()
+	filmsModule.InitRoutes(r.Group("/films"))
 }
