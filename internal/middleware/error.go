@@ -5,10 +5,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/rms-diego/book-my-session/pkg/exception"
-	"go.uber.org/zap"
 )
 
-func ErrorMiddleware(logger *zap.Logger) gin.HandlerFunc {
+func ErrorMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Next()
 

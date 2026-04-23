@@ -30,8 +30,8 @@ func main() {
 		panic(err)
 	}
 
-	r.Use(middleware.LogsMiddleware(logger.Log))
-	r.Use(middleware.ErrorMiddleware(logger.Log))
+	r.Use(middleware.LogsMiddleware())
+	r.Use(middleware.ErrorMiddleware())
 
 	routes.Init(r)
 

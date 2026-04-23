@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/rms-diego/book-my-session/pkg/logger"
 	"go.uber.org/zap"
 )
 
@@ -14,7 +15,7 @@ var skipPaths = map[string]bool{
 	"/health": true,
 }
 
-func LogsMiddleware(logger *zap.Logger) gin.HandlerFunc {
+func LogsMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()
 		path := c.Request.URL.Path
@@ -61,11 +62,11 @@ func LogsMiddleware(logger *zap.Logger) gin.HandlerFunc {
 
 		switch {
 		case status >= 500:
-			logger.Error("request", fields...)
+			logger.Log.Error("request", fields...)
 		case status >= 400:
-			logger.Warn("request", fields...)
+			logger.Log.Warn("request", fields...)
 		default:
-			logger.Info("request", fields...)
+			logger.Log.Info("request", fields...)
 		}
 	}
 }
