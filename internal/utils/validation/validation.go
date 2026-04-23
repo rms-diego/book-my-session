@@ -12,12 +12,12 @@ import (
 // struct validation rules defined via `validate:` tags (gookit/validate).
 // Returns the first error encountered: a binding error if the JSON is malformed
 // or missing required fields, or a validation error if a rule is violated.
-func BindAndValidate[T any](c *gin.Context, req *T) error {
-	if err := c.ShouldBindJSON(req); err != nil {
+func BindAndValidate[T any](c *gin.Context, payloadStruct *T) error {
+	if err := c.ShouldBindJSON(payloadStruct); err != nil {
 		return exception.NewException(err.Error(), http.StatusBadRequest)
 	}
 
-	v := validate.Struct(req)
+	v := validate.Struct(payloadStruct)
 	if !v.Validate() {
 		return exception.NewException(v.Errors.One(), http.StatusBadRequest)
 	}

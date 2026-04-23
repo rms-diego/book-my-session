@@ -20,7 +20,9 @@ CREATE TABLE IF NOT EXISTS films (
   minutes_duration INT,
   language film_language NOT NULL DEFAULT 'dubbed',
   thumbnail TEXT,
-  release_date DATE,
+  release_year INT,
+  age_range INT,
+  genre VARCHAR(255),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP
 );
