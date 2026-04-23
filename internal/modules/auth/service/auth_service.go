@@ -1,7 +1,6 @@
 package authservice
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/rms-diego/book-my-session/internal/model"
@@ -19,6 +18,7 @@ type authService struct {
 type AuthService interface {
 	SignUp(dto authdto.SignUpRequest) (*string, error)
 	SignIn(dto authdto.SignInRequest) (*string, error)
+	RefreshToken(token string) (*string, error)
 }
 
 func NewAuthService(repository authrepository.AuthRepository) AuthService {
@@ -61,7 +61,6 @@ func (s *authService) SignUp(data authdto.SignUpRequest) (*string, error) {
 }
 
 func (s *authService) SignIn(data authdto.SignInRequest) (*string, error) {
-	fmt.Println("HERREEEEE")
 	user, err := s.repository.FindByEmail(data.Email)
 	if err != nil {
 		return nil, err
@@ -88,4 +87,25 @@ func (s *authService) SignIn(data authdto.SignInRequest) (*string, error) {
 	}
 
 	return &strToken, nil
+}
+
+func (s *authService) RefreshToken(strToken string) (*string, error) {
+	claims, err := token.DecodeToken(strToken)
+	if err != nil {
+		return nil, err
+	}
+
+	newClaims := model.User{
+		ID:    claims.ID,
+		Name:  claims.Name,
+		Email: claims.Email,
+		Role:  claims.Role,
+	}
+
+	newToken, err := token.GenerateToken(newClaims)
+	if err != nil {
+		return nil, err
+	}
+
+	return &newToken, nil
 }

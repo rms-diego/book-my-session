@@ -39,13 +39,22 @@ func (h *authHandler) SignUp(c *gin.Context) {
 
 	exp := int(time.Now().Add(time.Hour * 12).Unix())
 	c.SetCookie("Authorization", *token, exp, "/", config.Env.COOKIE_DOMAIN, false, true)
-	c.JSON(http.StatusNoContent, nil)
+	c.JSON(http.StatusOK, gin.H{"token": token})
 }
 
 func (h *authHandler) SignIn(c *gin.Context) {
 	hasToken, _ := c.Cookie("Authorization")
+	exp := int(time.Now().Add(time.Hour * 12).Unix())
+
 	if hasToken != "" && token.ValidateToken(hasToken) {
-		c.JSON(http.StatusNoContent, nil)
+		token, err := h.service.RefreshToken(hasToken)
+		if err != nil {
+			c.Error(err)
+			return
+		}
+
+		c.SetCookie("Authorization", *token, exp, "/", config.Env.COOKIE_DOMAIN, false, true)
+		c.JSON(http.StatusOK, gin.H{"token": token})
 		return
 	}
 
@@ -61,7 +70,6 @@ func (h *authHandler) SignIn(c *gin.Context) {
 		return
 	}
 
-	exp := int(time.Now().Add(time.Hour * 12).Unix())
 	c.SetCookie("Authorization", *token, exp, "/", config.Env.COOKIE_DOMAIN, false, true)
-	c.JSON(http.StatusNoContent, nil)
+	c.JSON(http.StatusOK, gin.H{"token": token})
 }

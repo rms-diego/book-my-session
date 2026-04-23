@@ -9,7 +9,7 @@ import (
 )
 
 type UserClaims struct {
-	ID    uint   `json:"id"`
+	ID    string `json:"id"`
 	Name  string `json:"name"`
 	Email string `json:"email"`
 	Role  string `json:"role"`
@@ -17,33 +17,38 @@ type UserClaims struct {
 }
 
 func GenerateToken(payload model.User) (string, error) {
-	claims := jwt.MapClaims{
-		"id":    payload.ID,
-		"name":  payload.Name,
-		"email": payload.Email,
-		"role":  payload.Role,
-		"exp":   time.Now().Add(time.Hour * 12).Unix(),
-	}
-
 	t := jwt.NewWithClaims(
 		jwt.SigningMethodHS256,
-		claims,
+		UserClaims{
+			ID:    payload.ID,
+			Name:  payload.Name,
+			Email: payload.Email,
+			Role:  payload.Role,
+			RegisteredClaims: jwt.RegisteredClaims{
+				ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 12)),
+			},
+		},
 	)
 
 	return t.SignedString([]byte(config.Env.JWT_SECRET))
 }
 
-func DecodeToken[T jwt.Claims](tokenString string, claims T) (T, error) {
+func DecodeToken(tokenString string) (*UserClaims, error) {
+	claims := &UserClaims{}
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (any, error) {
 		return []byte(config.Env.JWT_SECRET), nil
 	})
 
 	if err != nil {
-		var zero T
-		return zero, err
+		return nil, err
 	}
 
-	return token.Claims.(T), nil
+	userClaims, ok := token.Claims.(*UserClaims)
+	if !ok {
+		return nil, jwt.ErrTokenMalformed
+	}
+
+	return userClaims, nil
 }
 
 func ValidateToken(tokenString string) bool {
