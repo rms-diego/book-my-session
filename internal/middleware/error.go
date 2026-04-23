@@ -18,12 +18,10 @@ func ErrorMiddleware() gin.HandlerFunc {
 		err := c.Errors.Last().Err
 		message := err.Error()
 		if customErr, ok := err.(exception.Exception); ok {
-			if customErr.Code() >= 400 && customErr.Code() < 500 {
-				c.JSON(customErr.Code(), gin.H{"error": message})
-				return
-			}
+			c.AbortWithStatusJSON(customErr.Code(), gin.H{"error": message})
+			return
 		}
 
-		c.JSON(http.StatusInternalServerError, gin.H{"error": message})
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": message})
 	}
 }

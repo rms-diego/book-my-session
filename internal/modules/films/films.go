@@ -3,6 +3,7 @@ package films
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/rms-diego/book-my-session/internal/database"
+	"github.com/rms-diego/book-my-session/internal/middleware"
 	filmshandler "github.com/rms-diego/book-my-session/internal/modules/films/handler"
 	filmsrepository "github.com/rms-diego/book-my-session/internal/modules/films/repository"
 	filmsservice "github.com/rms-diego/book-my-session/internal/modules/films/service"
@@ -31,5 +32,5 @@ func NewFilmsModule() FilmsModule {
 }
 
 func (m *filmsModule) InitRoutes(r *gin.RouterGroup) {
-	r.POST("/", m.handler.CreateFilm)
+	r.POST("/", middleware.ValidateRole(), m.handler.CreateFilm)
 }
