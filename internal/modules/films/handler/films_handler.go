@@ -8,6 +8,7 @@ import (
 	filmsservice "github.com/rms-diego/book-my-session/internal/modules/films/service"
 	"github.com/rms-diego/book-my-session/internal/shared"
 	"github.com/rms-diego/book-my-session/internal/utils/validation"
+	"github.com/rms-diego/book-my-session/pkg/exception"
 )
 
 type filmsHandler struct {
@@ -16,6 +17,7 @@ type filmsHandler struct {
 
 type FilmsHandler interface {
 	Create(c *gin.Context)
+	UploadThumbnail(c *gin.Context)
 	Update(c *gin.Context)
 	Delete(c *gin.Context)
 	GetAll(c *gin.Context)
@@ -33,7 +35,7 @@ func (h *filmsHandler) Create(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.Create(payload); err != nil {
+	if err := h.service.Create(c.Request.Context(), payload); err != nil {
 		c.Error(err)
 		return
 	}
@@ -54,7 +56,7 @@ func (h *filmsHandler) Update(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.Update(params.ID, payload); err != nil {
+	if err := h.service.Update(c.Request.Context(), params.ID, payload); err != nil {
 		c.Error(err)
 		return
 	}
@@ -69,7 +71,7 @@ func (h *filmsHandler) Delete(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.Delete(params.ID); err != nil {
+	if err := h.service.Delete(c.Request.Context(), params.ID); err != nil {
 		c.Error(err)
 		return
 	}
@@ -78,7 +80,7 @@ func (h *filmsHandler) Delete(c *gin.Context) {
 }
 
 func (h *filmsHandler) GetAll(c *gin.Context) {
-	films, err := h.service.GetAll()
+	films, err := h.service.GetAll(c.Request.Context())
 	if err != nil {
 		c.Error(err)
 		return
@@ -94,11 +96,32 @@ func (h *filmsHandler) GetById(c *gin.Context) {
 		return
 	}
 
-	film, err := h.service.GetById(params.ID)
+	film, err := h.service.GetById(c.Request.Context(), params.ID)
 	if err != nil {
 		c.Error(err)
 		return
 	}
 
 	c.JSON(http.StatusOK, film)
+}
+
+func (h *filmsHandler) UploadThumbnail(c *gin.Context) {
+	var params shared.IDParam
+	if err := validation.BindAndValidateParams(c, &params); err != nil {
+		c.Error(err)
+		return
+	}
+
+	f, err := c.FormFile("thumbnail")
+	if err != nil {
+		c.Error(exception.NewException("thumbnail file is required", http.StatusBadRequest))
+		return
+	}
+
+	if err := h.service.UploadThumbnail(c.Request.Context(), params.ID, f); err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.Status(http.StatusOK)
 }

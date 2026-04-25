@@ -3,6 +3,7 @@ package films
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/rms-diego/book-my-session/internal/database"
+	s3gateway "github.com/rms-diego/book-my-session/internal/gateway/s3-gateway"
 	"github.com/rms-diego/book-my-session/internal/middleware"
 	filmshandler "github.com/rms-diego/book-my-session/internal/modules/films/handler"
 	filmsrepository "github.com/rms-diego/book-my-session/internal/modules/films/repository"
@@ -21,7 +22,7 @@ type FilmsModule interface {
 
 func NewFilmsModule() FilmsModule {
 	r := filmsrepository.NewFilmsRepository(database.Db)
-	s := filmsservice.NewFilmsService(r)
+	s := filmsservice.NewFilmsService(r, s3gateway.S3Gateway)
 	h := filmshandler.NewFilmsHandler(s)
 
 	return &filmsModule{
@@ -35,6 +36,7 @@ func (m *filmsModule) InitRoutes(r *gin.RouterGroup) {
 	r.Use(middleware.ValidationToken())
 
 	r.POST("/", middleware.ValidateRole(), m.handler.Create)
+	r.POST("/:id/thumbnail", middleware.ValidateRole(), m.handler.UploadThumbnail)
 	r.PUT("/:id", middleware.ValidateRole(), m.handler.Update)
 	r.DELETE("/:id", middleware.ValidateRole(), m.handler.Delete)
 	r.GET("/", m.handler.GetAll)

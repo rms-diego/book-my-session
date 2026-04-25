@@ -1,6 +1,7 @@
 package filmsrepository
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/doug-martin/goqu/v9"
@@ -13,18 +14,18 @@ type filmsRepository struct {
 }
 
 type FilmsRepository interface {
-	Create(payload filmsdto.CreateFilmRequest) error
-	Update(id string, payload filmsdto.UpdateFilmRequest) error
-	Delete(id string) error
-	GetAll() (*[]model.Film, error)
-	GetById(id string) (*model.Film, error)
+	Create(ctx context.Context, payload filmsdto.CreateFilmRequest) error
+	Update(ctx context.Context, id string, payload filmsdto.UpdateFilmRequest) error
+	Delete(ctx context.Context, id string) error
+	GetAll(ctx context.Context) (*[]model.Film, error)
+	GetById(ctx context.Context, id string) (*model.Film, error)
 }
 
 func NewFilmsRepository(db *goqu.Database) FilmsRepository {
 	return &filmsRepository{db}
 }
 
-func (r *filmsRepository) Create(payload filmsdto.CreateFilmRequest) error {
+func (r *filmsRepository) Create(ctx context.Context, payload filmsdto.CreateFilmRequest) error {
 	var film model.Film
 	t := reflect.TypeOf(payload)
 	v := reflect.ValueOf(payload)
@@ -54,7 +55,7 @@ func (r *filmsRepository) Create(payload filmsdto.CreateFilmRequest) error {
 		Vals(vals).
 		Returning("*").
 		Executor().
-		ScanStruct(&film)
+		ScanStructContext(ctx, &film)
 
 	if err != nil {
 		return err
@@ -63,7 +64,7 @@ func (r *filmsRepository) Create(payload filmsdto.CreateFilmRequest) error {
 	return nil
 }
 
-func (r *filmsRepository) Update(id string, payload filmsdto.UpdateFilmRequest) error {
+func (r *filmsRepository) Update(ctx context.Context, id string, payload filmsdto.UpdateFilmRequest) error {
 	updateData := make(map[string]any)
 	t := reflect.TypeOf(payload)
 	v := reflect.ValueOf(payload)
@@ -102,28 +103,29 @@ func (r *filmsRepository) Update(id string, payload filmsdto.UpdateFilmRequest) 
 		Set(updateData).
 		Where(goqu.Ex{"id": id}).
 		Executor().
-		Exec()
+		ExecContext(ctx)
 
 	return err
 }
 
-func (r *filmsRepository) Delete(id string) error {
+func (r *filmsRepository) Delete(ctx context.Context, id string) error {
 	_, err := r.db.Update(model.FILMS_TABLE).
 		Set(goqu.Record{"deleted": true, "deleted_at": goqu.L("NOW()")}).
 		Where(goqu.Ex{"id": id}).
 		Executor().
-		Exec()
+		ExecContext(ctx)
 
 	return err
 }
 
-func (r *filmsRepository) GetById(id string) (*model.Film, error) {
+func (r *filmsRepository) GetById(ctx context.Context, id string) (*model.Film, error) {
 	var film model.Film
 
 	found, err := r.db.From(model.FILMS_TABLE).
 		Where(goqu.Ex{"id": id}).
 		Select("*").
-		ScanStruct(&film)
+		Executor().
+		ScanStructContext(ctx, &film)
 
 	if err != nil {
 		return nil, err
@@ -136,13 +138,14 @@ func (r *filmsRepository) GetById(id string) (*model.Film, error) {
 	return &film, nil
 }
 
-func (r *filmsRepository) GetAll() (*[]model.Film, error) {
+func (r *filmsRepository) GetAll(ctx context.Context) (*[]model.Film, error) {
 	var films []model.Film
 
 	err := r.db.From(model.FILMS_TABLE).
 		Where(goqu.Ex{"deleted": false, "deleted_at": nil}).
 		Select("*").
-		ScanStructs(&films)
+		Executor().
+		ScanStructsContext(ctx, &films)
 
 	if err != nil {
 		return nil, err
