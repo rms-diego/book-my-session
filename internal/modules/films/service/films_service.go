@@ -15,6 +15,7 @@ type filmsService struct {
 type FilmsService interface {
 	Create(payload filmsdto.CreateFilmRequest) error
 	Update(id string, payload filmsdto.UpdateFilmRequest) error
+	Delete(id string) error
 }
 
 func NewFilmsService(repository filmsrepository.FilmsRepository) FilmsService {
@@ -40,6 +41,23 @@ func (s *filmsService) Update(id string, payload filmsdto.UpdateFilmRequest) err
 	}
 
 	if err := s.repository.Update(id, payload); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *filmsService) Delete(id string) error {
+	f, err := s.repository.FindById(id)
+	if err != nil {
+		return err
+	}
+
+	if f == nil {
+		return exception.NewException("film not found", http.StatusNotFound)
+	}
+
+	if err := s.repository.Delete(id); err != nil {
 		return err
 	}
 

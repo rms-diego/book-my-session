@@ -17,6 +17,7 @@ type filmsHandler struct {
 type FilmsHandler interface {
 	Create(c *gin.Context)
 	Update(c *gin.Context)
+	Delete(c *gin.Context)
 }
 
 func NewFilmsHandler(service filmsservice.FilmsService) FilmsHandler {
@@ -39,19 +40,34 @@ func (h *filmsHandler) Create(c *gin.Context) {
 }
 
 func (h *filmsHandler) Update(c *gin.Context) {
-	var payload filmsdto.UpdateFilmRequest
 	var params shared.IDParam
-	if err := validation.BindAndValidateBody(c, &payload); err != nil {
-		c.Error(err)
-		return
-	}
-
 	if err := validation.BindAndValidateParams(c, &params); err != nil {
 		c.Error(err)
 		return
 	}
 
+	var payload filmsdto.UpdateFilmRequest
+	if err := validation.BindAndValidateBody(c, &payload); err != nil {
+		c.Error(err)
+		return
+	}
+
 	if err := h.service.Update(params.ID, payload); err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.Status(http.StatusNoContent)
+}
+
+func (h *filmsHandler) Delete(c *gin.Context) {
+	var params shared.IDParam
+	if err := validation.BindAndValidateParams(c, &params); err != nil {
+		c.Error(err)
+		return
+	}
+
+	if err := h.service.Delete(params.ID); err != nil {
 		c.Error(err)
 		return
 	}

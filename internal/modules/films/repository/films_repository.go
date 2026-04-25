@@ -16,6 +16,7 @@ type FilmsRepository interface {
 	Create(payload filmsdto.CreateFilmRequest) error
 	FindById(id string) (*model.Film, error)
 	Update(id string, payload filmsdto.UpdateFilmRequest) error
+	Delete(id string) error
 }
 
 func NewFilmsRepository(db *goqu.Database) FilmsRepository {
@@ -102,6 +103,15 @@ func (r *filmsRepository) Update(id string, payload filmsdto.UpdateFilmRequest) 
 
 	_, err := r.db.Update(model.FILMS_TABLE).
 		Set(updateData).
+		Where(goqu.Ex{"id": id}).
+		Executor().
+		Exec()
+
+	return err
+}
+
+func (r *filmsRepository) Delete(id string) error {
+	_, err := r.db.Delete(model.FILMS_TABLE).
 		Where(goqu.Ex{"id": id}).
 		Executor().
 		Exec()
