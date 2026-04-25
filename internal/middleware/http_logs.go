@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/rms-diego/book-my-session/internal/utils/token"
 	"github.com/rms-diego/book-my-session/pkg/logger"
 	"go.uber.org/zap"
 )
@@ -35,6 +36,17 @@ func LogsMiddleware() gin.HandlerFunc {
 
 		c.Next()
 
+		claims, _ := token.FromContext(c.Request.Context())
+		var userInfo any
+		if claims != nil {
+			userInfo = map[string]any{
+				"id":    claims.ID,
+				"name":  claims.Name,
+				"email": claims.Email,
+				"role":  claims.Role,
+			}
+		}
+
 		status := c.Writer.Status()
 		latency := time.Since(start)
 		method := c.Request.Method
@@ -46,6 +58,7 @@ func LogsMiddleware() gin.HandlerFunc {
 			zap.String("path", path),
 			zap.Duration("latency", latency),
 			zap.String("client_ip", c.ClientIP()),
+			zap.Any("user", userInfo),
 		}
 
 		if query != "" {

@@ -24,7 +24,9 @@ func ValidationToken() gin.HandlerFunc {
 			return
 		}
 
-		c.Set("claims", claims)
+		ctx := token.NewContext(c.Request.Context(), claims)
+		c.Request = c.Request.WithContext(ctx)
+
 		c.Next()
 	}
 }

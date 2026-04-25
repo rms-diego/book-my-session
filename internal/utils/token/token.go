@@ -1,6 +1,7 @@
 package token
 
 import (
+	"context"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -15,6 +16,10 @@ type UserClaims struct {
 	Role  string `json:"role"`
 	jwt.RegisteredClaims
 }
+
+type claims string
+
+const CONTEXT_CLAIMS_KEY claims = "claims"
 
 func GenerateToken(payload model.User) (string, error) {
 	t := jwt.NewWithClaims(
@@ -57,4 +62,13 @@ func ValidateToken(tokenString string) bool {
 		return []byte(config.Env.JWT_SECRET), nil
 	})
 	return err == nil
+}
+
+func FromContext(ctx context.Context) (*UserClaims, bool) {
+	claims, ok := ctx.Value(CONTEXT_CLAIMS_KEY).(*UserClaims)
+	return claims, ok
+}
+
+func NewContext(ctx context.Context, claims *UserClaims) context.Context {
+	return context.WithValue(ctx, CONTEXT_CLAIMS_KEY, claims)
 }

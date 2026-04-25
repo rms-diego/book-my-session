@@ -10,21 +10,16 @@ import (
 
 func ValidateRole() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		claims, exists := c.Get("claims")
+		ctx := c.Request.Context()
+
+		claims, exists := token.FromContext(ctx)
 		if !exists {
 			c.Error(exception.NewException("Unauthorized", http.StatusUnauthorized))
 			c.Abort()
 			return
 		}
 
-		u, ok := claims.(*token.UserClaims)
-		if !ok {
-			c.Error(exception.NewException("Unauthorized", http.StatusUnauthorized))
-			c.Abort()
-			return
-		}
-
-		if u.Role != "admin" {
+		if claims.Role != "admin" {
 			c.Error(exception.NewException("Forbidden", http.StatusForbidden))
 			c.Abort()
 			return
