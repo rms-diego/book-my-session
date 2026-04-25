@@ -8,28 +8,23 @@ import (
 	"github.com/rms-diego/book-my-session/pkg/exception"
 )
 
-func ValidateRole() gin.HandlerFunc {
+func ValidationToken() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		claims, exists := c.Get("claims")
-		if !exists {
+		t, err := c.Cookie("Authorization")
+		if err != nil {
 			c.Error(exception.NewException("Unauthorized", http.StatusUnauthorized))
 			c.Abort()
 			return
 		}
 
-		u, ok := claims.(*token.UserClaims)
-		if !ok {
+		claims, err := token.DecodeToken(t)
+		if err != nil {
 			c.Error(exception.NewException("Unauthorized", http.StatusUnauthorized))
 			c.Abort()
 			return
 		}
 
-		if u.Role != "admin" {
-			c.Error(exception.NewException("Forbidden", http.StatusForbidden))
-			c.Abort()
-			return
-		}
-
+		c.Set("claims", claims)
 		c.Next()
 	}
 }
