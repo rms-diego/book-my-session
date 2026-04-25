@@ -25,7 +25,7 @@ func NewFilmsHandler(service filmsservice.FilmsService) FilmsHandler {
 
 func (h *filmsHandler) Create(c *gin.Context) {
 	var payload filmsdto.CreateFilmRequest
-	if err := validation.BindAndValidate(c, &payload); err != nil {
+	if err := validation.BindAndValidateBody(c, &payload); err != nil {
 		c.Error(err)
 		return
 	}
@@ -41,7 +41,7 @@ func (h *filmsHandler) Create(c *gin.Context) {
 func (h *filmsHandler) Update(c *gin.Context) {
 	var payload filmsdto.UpdateFilmRequest
 	var params shared.IDParam
-	if err := validation.BindAndValidate(c, &payload); err != nil {
+	if err := validation.BindAndValidateBody(c, &payload); err != nil {
 		c.Error(err)
 		return
 	}

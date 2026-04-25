@@ -26,7 +26,7 @@ func NewAuthHandler(service authservice.AuthService) AuthHandler {
 
 func (h *authHandler) SignUp(c *gin.Context) {
 	var payload authdto.SignUpRequest
-	if err := validation.BindAndValidate(c, &payload); err != nil {
+	if err := validation.BindAndValidateBody(c, &payload); err != nil {
 		c.Error(err)
 		return
 	}
@@ -45,7 +45,7 @@ func (h *authHandler) SignIn(c *gin.Context) {
 	exp := int(time.Now().Add(time.Hour * 12).Unix())
 
 	var payload authdto.SignInRequest
-	if err := validation.BindAndValidate(c, &payload); err != nil {
+	if err := validation.BindAndValidateBody(c, &payload); err != nil {
 		c.Error(err)
 		return
 	}
