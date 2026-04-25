@@ -14,9 +14,10 @@ type filmsRepository struct {
 
 type FilmsRepository interface {
 	Create(payload filmsdto.CreateFilmRequest) error
-	FindById(id string) (*model.Film, error)
 	Update(id string, payload filmsdto.UpdateFilmRequest) error
 	Delete(id string) error
+	GetAll() (*[]model.Film, error)
+	GetById(id string) (*model.Film, error)
 }
 
 func NewFilmsRepository(db *goqu.Database) FilmsRepository {
@@ -62,20 +63,6 @@ func (r *filmsRepository) Create(payload filmsdto.CreateFilmRequest) error {
 	return nil
 }
 
-func (r *filmsRepository) FindById(id string) (*model.Film, error) {
-	var film model.Film
-
-	_, err := r.db.From(model.FILMS_TABLE).
-		Where(goqu.Ex{"id": id}).
-		ScanStruct(&film)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return &film, nil
-}
-
 func (r *filmsRepository) Update(id string, payload filmsdto.UpdateFilmRequest) error {
 	updateData := make(map[string]any)
 	t := reflect.TypeOf(payload)
@@ -111,10 +98,38 @@ func (r *filmsRepository) Update(id string, payload filmsdto.UpdateFilmRequest) 
 }
 
 func (r *filmsRepository) Delete(id string) error {
-	_, err := r.db.Delete(model.FILMS_TABLE).
+	_, err := r.db.Update(model.FILMS_TABLE).
+		Set(goqu.Record{"deleted": true}).
 		Where(goqu.Ex{"id": id}).
 		Executor().
 		Exec()
 
 	return err
+}
+
+func (r *filmsRepository) GetById(id string) (*model.Film, error) {
+	var film model.Film
+
+	_, err := r.db.From(model.FILMS_TABLE).
+		Where(goqu.Ex{"id": id}).
+		ScanStruct(&film)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &film, nil
+}
+
+func (r *filmsRepository) GetAll() (*[]model.Film, error) {
+	var films []model.Film
+
+	err := r.db.From(model.FILMS_TABLE).
+		ScanStructs(&films)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &films, nil
 }

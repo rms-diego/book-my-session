@@ -18,6 +18,8 @@ type FilmsHandler interface {
 	Create(c *gin.Context)
 	Update(c *gin.Context)
 	Delete(c *gin.Context)
+	GetAll(c *gin.Context)
+	GetById(c *gin.Context)
 }
 
 func NewFilmsHandler(service filmsservice.FilmsService) FilmsHandler {
@@ -73,4 +75,30 @@ func (h *filmsHandler) Delete(c *gin.Context) {
 	}
 
 	c.Status(http.StatusNoContent)
+}
+
+func (h *filmsHandler) GetAll(c *gin.Context) {
+	films, err := h.service.GetAll()
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.JSON(http.StatusOK, films)
+}
+
+func (h *filmsHandler) GetById(c *gin.Context) {
+	var params shared.IDParam
+	if err := validation.BindAndValidateParams(c, &params); err != nil {
+		c.Error(err)
+		return
+	}
+
+	film, err := h.service.GetById(params.ID)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.JSON(http.StatusOK, film)
 }

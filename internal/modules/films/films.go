@@ -37,4 +37,6 @@ func (m *filmsModule) InitRoutes(r *gin.RouterGroup) {
 	r.POST("/", middleware.ValidateRole(), m.handler.Create)
 	r.PUT("/:id", middleware.ValidateRole(), m.handler.Update)
 	r.DELETE("/:id", middleware.ValidateRole(), m.handler.Delete)
+	r.GET("/", m.handler.GetAll)
+	r.GET("/:id", m.handler.GetById)
 }

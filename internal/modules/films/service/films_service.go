@@ -3,6 +3,7 @@ package filmsservice
 import (
 	"net/http"
 
+	"github.com/rms-diego/book-my-session/internal/model"
 	filmsdto "github.com/rms-diego/book-my-session/internal/modules/films/dto"
 	filmsrepository "github.com/rms-diego/book-my-session/internal/modules/films/repository"
 	"github.com/rms-diego/book-my-session/pkg/exception"
@@ -16,6 +17,8 @@ type FilmsService interface {
 	Create(payload filmsdto.CreateFilmRequest) error
 	Update(id string, payload filmsdto.UpdateFilmRequest) error
 	Delete(id string) error
+	GetAll() (*[]model.Film, error)
+	GetById(id string) (*model.Film, error)
 }
 
 func NewFilmsService(repository filmsrepository.FilmsRepository) FilmsService {
@@ -31,7 +34,7 @@ func (s *filmsService) Create(payload filmsdto.CreateFilmRequest) error {
 }
 
 func (s *filmsService) Update(id string, payload filmsdto.UpdateFilmRequest) error {
-	f, err := s.repository.FindById(id)
+	f, err := s.repository.GetById(id)
 	if err != nil {
 		return err
 	}
@@ -48,7 +51,7 @@ func (s *filmsService) Update(id string, payload filmsdto.UpdateFilmRequest) err
 }
 
 func (s *filmsService) Delete(id string) error {
-	f, err := s.repository.FindById(id)
+	f, err := s.repository.GetById(id)
 	if err != nil {
 		return err
 	}
@@ -62,4 +65,26 @@ func (s *filmsService) Delete(id string) error {
 	}
 
 	return nil
+}
+
+func (s *filmsService) GetAll() (*[]model.Film, error) {
+	films, err := s.repository.GetAll()
+	if err != nil {
+		return nil, err
+	}
+
+	return films, nil
+}
+
+func (s *filmsService) GetById(id string) (*model.Film, error) {
+	film, err := s.repository.GetById(id)
+	if err != nil {
+		return nil, err
+	}
+
+	if film == nil {
+		return nil, exception.NewException("film not found", http.StatusNotFound)
+	}
+
+	return film, nil
 }
