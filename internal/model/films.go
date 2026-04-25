@@ -12,6 +12,8 @@ type Film struct {
 	AgeRange        *int    `json:"age_range" db:"age_range"`
 	CreatedAt       string  `json:"created_at" db:"created_at"`
 	UpdatedAt       *string `json:"updated_at" db:"updated_at"`
+	DeletedAt       *string `json:"deleted_at" db:"deleted_at"`
+	Deleted         bool    `json:"deleted" db:"deleted"`
 }
 
 const FILMS_TABLE string = "films"

@@ -23,8 +23,10 @@ CREATE TABLE IF NOT EXISTS films (
   release_year INT,
   age_range INT,
   genre VARCHAR(255),
+  deleted BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP
+  updated_at TIMESTAMP,
+  deleted_at TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS sessions(
@@ -34,8 +36,10 @@ CREATE TABLE IF NOT EXISTS sessions(
   ended_at TIMESTAMP,
   user_id UUID NOT NULL,
   film_id UUID NOT NULL,
+  deleted BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP,
+  deleted_at TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
   FOREIGN KEY (film_id) REFERENCES films(id) ON DELETE CASCADE,
   UNIQUE(film_id, seat_label)
