@@ -1,8 +1,11 @@
 package filmsservice
 
 import (
+	"net/http"
+
 	filmsdto "github.com/rms-diego/book-my-session/internal/modules/films/dto"
 	filmsrepository "github.com/rms-diego/book-my-session/internal/modules/films/repository"
+	"github.com/rms-diego/book-my-session/pkg/exception"
 )
 
 type filmsService struct {
@@ -10,15 +13,33 @@ type filmsService struct {
 }
 
 type FilmsService interface {
-	CreateFilm(payload filmsdto.CreateFilmRequest) error
+	Create(payload filmsdto.CreateFilmRequest) error
+	Update(id string, payload filmsdto.UpdateFilmRequest) error
 }
 
 func NewFilmsService(repository filmsrepository.FilmsRepository) FilmsService {
 	return &filmsService{repository}
 }
 
-func (s *filmsService) CreateFilm(payload filmsdto.CreateFilmRequest) error {
+func (s *filmsService) Create(payload filmsdto.CreateFilmRequest) error {
 	if err := s.repository.Create(payload); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *filmsService) Update(id string, payload filmsdto.UpdateFilmRequest) error {
+	f, err := s.repository.FindById(id)
+	if err != nil {
+		return err
+	}
+
+	if f == nil {
+		return exception.NewException("film not found", http.StatusNotFound)
+	}
+
+	if err := s.repository.Update(id, payload); err != nil {
 		return err
 	}
 

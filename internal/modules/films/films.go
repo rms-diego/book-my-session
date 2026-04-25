@@ -33,5 +33,7 @@ func NewFilmsModule() FilmsModule {
 
 func (m *filmsModule) InitRoutes(r *gin.RouterGroup) {
 	r.Use(middleware.ValidationToken())
-	r.POST("/", middleware.ValidateRole(), m.handler.CreateFilm)
+
+	r.POST("/", middleware.ValidateRole(), m.handler.Create)
+	r.PUT("/:id", middleware.ValidateRole(), m.handler.Update)
 }
