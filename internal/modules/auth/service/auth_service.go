@@ -26,7 +26,7 @@ func NewAuthService(repository authrepository.AuthRepository) AuthService {
 }
 
 func (s *authService) SignUp(data authdto.SignUpRequest) (*string, error) {
-	user, err := s.repository.FindByEmail(data.Email)
+	user, err := s.repository.GetByEmail(data.Email)
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +61,7 @@ func (s *authService) SignUp(data authdto.SignUpRequest) (*string, error) {
 }
 
 func (s *authService) SignIn(data authdto.SignInRequest) (*string, error) {
-	user, err := s.repository.FindByEmail(data.Email)
+	user, err := s.repository.GetByEmail(data.Email)
 	if err != nil {
 		return nil, err
 	}

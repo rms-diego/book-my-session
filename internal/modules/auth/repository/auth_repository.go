@@ -12,7 +12,7 @@ type authRepository struct {
 
 type AuthRepository interface {
 	Create(data authdto.SignUpRequest) (*model.User, error)
-	FindByEmail(email string) (*model.User, error)
+	GetByEmail(email string) (*model.User, error)
 }
 
 func NewAuthRepository(db *goqu.Database) AuthRepository {
@@ -36,7 +36,7 @@ func (r *authRepository) Create(data authdto.SignUpRequest) (*model.User, error)
 	return &user, nil
 }
 
-func (r *authRepository) FindByEmail(email string) (*model.User, error) {
+func (r *authRepository) GetByEmail(email string) (*model.User, error) {
 	var data model.User
 
 	found, err := r.db.From(model.USERS_TABLE).
