@@ -7,7 +7,6 @@ import (
 	"github.com/gin-gonic/gin"
 	authdto "github.com/rms-diego/book-my-session/internal/modules/auth/dto"
 	authservice "github.com/rms-diego/book-my-session/internal/modules/auth/service"
-	"github.com/rms-diego/book-my-session/internal/utils/token"
 	"github.com/rms-diego/book-my-session/internal/utils/validation"
 	"github.com/rms-diego/book-my-session/pkg/config"
 )
@@ -43,20 +42,7 @@ func (h *authHandler) SignUp(c *gin.Context) {
 }
 
 func (h *authHandler) SignIn(c *gin.Context) {
-	hasToken, _ := c.Cookie("Authorization")
 	exp := int(time.Now().Add(time.Hour * 12).Unix())
-
-	if hasToken != "" && token.ValidateToken(hasToken) {
-		token, err := h.service.RefreshToken(hasToken)
-		if err != nil {
-			c.Error(err)
-			return
-		}
-
-		c.SetCookie("Authorization", *token, exp, "/", config.Env.COOKIE_DOMAIN, false, true)
-		c.JSON(http.StatusOK, gin.H{"token": token})
-		return
-	}
 
 	var payload authdto.SignInRequest
 	if err := validation.BindAndValidate(c, &payload); err != nil {
