@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/rms-diego/book-my-session/internal/database"
+	s3gateway "github.com/rms-diego/book-my-session/internal/gateway/s3-gateway"
 	"github.com/rms-diego/book-my-session/internal/middleware"
 	"github.com/rms-diego/book-my-session/internal/routes"
 	"github.com/rms-diego/book-my-session/pkg/config"
@@ -27,6 +28,10 @@ func main() {
 	}
 
 	if err := database.Init(); err != nil {
+		panic(err)
+	}
+
+	if err := s3gateway.Init(); err != nil {
 		panic(err)
 	}
 

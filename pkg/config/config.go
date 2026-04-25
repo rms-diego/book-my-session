@@ -16,6 +16,7 @@ type Config struct {
 	DB_NAME       string
 	JWT_SECRET    string
 	COOKIE_DOMAIN string
+	S3_BUCKET     string
 }
 
 var Env *Config
@@ -51,6 +52,9 @@ func Init() error {
 	case os.Getenv("COOKIE_DOMAIN") == "":
 		return fmt.Errorf("COOKIE_DOMAIN environment variable is required")
 
+	case os.Getenv("S3_BUCKET") == "":
+		return fmt.Errorf("S3_BUCKET environment variable is required")
+
 	default:
 		Env = &Config{
 			PORT:          os.Getenv("PORT"),
@@ -61,6 +65,7 @@ func Init() error {
 			DB_NAME:       os.Getenv("DB_NAME"),
 			JWT_SECRET:    os.Getenv("JWT_SECRET"),
 			COOKIE_DOMAIN: os.Getenv("COOKIE_DOMAIN"),
+			S3_BUCKET:     os.Getenv("S3_BUCKET"),
 		}
 	}
 	return nil
