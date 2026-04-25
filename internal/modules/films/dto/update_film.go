@@ -8,4 +8,5 @@ type UpdateFilmRequest struct {
 	ReleaseYear *int    `json:"releaseYear" db:"release_year" validate:"gt:0" message:"release year must be greater than 0 if provided"`
 	Genre       *string `json:"genre" db:"genre" validate:"min_len:1" message:"genre must be at least 1 character long if provided"`
 	AgeRange    *int    `json:"ageRange" db:"age_range"`
+	Deleted     *bool   `json:"deleted" db:"deleted"`
 }

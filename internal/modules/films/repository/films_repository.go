@@ -81,12 +81,22 @@ func (r *filmsRepository) Update(id string, payload filmsdto.UpdateFilmRequest) 
 			continue
 		}
 
+		if col == "deleted" && fv.Elem().Bool() == false {
+			updateData["deleted_at"] = nil
+		}
+
+		if col == "deleted" && fv.Elem().Bool() {
+			updateData["deleted_at"] = goqu.L("NOW()")
+		}
+
 		updateData[col] = fv.Interface()
 	}
 
 	if len(updateData) == 0 {
 		return nil
 	}
+
+	updateData["updated_at"] = goqu.L("NOW()")
 
 	_, err := r.db.Update(model.FILMS_TABLE).
 		Set(updateData).
@@ -99,7 +109,7 @@ func (r *filmsRepository) Update(id string, payload filmsdto.UpdateFilmRequest) 
 
 func (r *filmsRepository) Delete(id string) error {
 	_, err := r.db.Update(model.FILMS_TABLE).
-		Set(goqu.Record{"deleted": true}).
+		Set(goqu.Record{"deleted": true, "deleted_at": goqu.L("NOW()")}).
 		Where(goqu.Ex{"id": id}).
 		Executor().
 		Exec()
@@ -110,12 +120,17 @@ func (r *filmsRepository) Delete(id string) error {
 func (r *filmsRepository) GetById(id string) (*model.Film, error) {
 	var film model.Film
 
-	_, err := r.db.From(model.FILMS_TABLE).
+	found, err := r.db.From(model.FILMS_TABLE).
 		Where(goqu.Ex{"id": id}).
+		Select("*").
 		ScanStruct(&film)
 
 	if err != nil {
 		return nil, err
+	}
+
+	if !found {
+		return nil, nil
 	}
 
 	return &film, nil
@@ -125,6 +140,8 @@ func (r *filmsRepository) GetAll() (*[]model.Film, error) {
 	var films []model.Film
 
 	err := r.db.From(model.FILMS_TABLE).
+		Where(goqu.Ex{"deleted": false, "deleted_at": nil}).
+		Select("*").
 		ScanStructs(&films)
 
 	if err != nil {
