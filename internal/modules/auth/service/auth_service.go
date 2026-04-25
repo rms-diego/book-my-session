@@ -1,6 +1,7 @@
 package authservice
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/rms-diego/book-my-session/internal/model"
@@ -16,17 +17,17 @@ type authService struct {
 }
 
 type AuthService interface {
-	SignUp(dto authdto.SignUpRequest) (*string, error)
-	SignIn(dto authdto.SignInRequest) (*string, error)
-	RefreshToken(token string) (*string, error)
+	SignUp(ctx context.Context, dto authdto.SignUpRequest) (*string, error)
+	SignIn(ctx context.Context, dto authdto.SignInRequest) (*string, error)
+	RefreshToken(ctx context.Context, token string) (*string, error)
 }
 
 func NewAuthService(repository authrepository.AuthRepository) AuthService {
 	return &authService{repository}
 }
 
-func (s *authService) SignUp(data authdto.SignUpRequest) (*string, error) {
-	user, err := s.repository.GetByEmail(data.Email)
+func (s *authService) SignUp(ctx context.Context, data authdto.SignUpRequest) (*string, error) {
+	user, err := s.repository.GetByEmail(ctx, data.Email)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +48,7 @@ func (s *authService) SignUp(data authdto.SignUpRequest) (*string, error) {
 		Name:     data.Name,
 	}
 
-	uc, err := s.repository.Create(u)
+	uc, err := s.repository.Create(ctx, u)
 	if err != nil {
 		return nil, err
 	}
@@ -60,8 +61,8 @@ func (s *authService) SignUp(data authdto.SignUpRequest) (*string, error) {
 	return &strToken, nil
 }
 
-func (s *authService) SignIn(data authdto.SignInRequest) (*string, error) {
-	user, err := s.repository.GetByEmail(data.Email)
+func (s *authService) SignIn(ctx context.Context, data authdto.SignInRequest) (*string, error) {
+	user, err := s.repository.GetByEmail(ctx, data.Email)
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +90,7 @@ func (s *authService) SignIn(data authdto.SignInRequest) (*string, error) {
 	return &strToken, nil
 }
 
-func (s *authService) RefreshToken(strToken string) (*string, error) {
+func (s *authService) RefreshToken(ctx context.Context, strToken string) (*string, error) {
 	claims, err := token.DecodeToken(strToken)
 	if err != nil {
 		return nil, err

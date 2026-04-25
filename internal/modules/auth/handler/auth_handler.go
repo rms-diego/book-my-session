@@ -30,7 +30,7 @@ func (h *authHandler) SignUp(c *gin.Context) {
 		c.Error(err)
 		return
 	}
-	token, err := h.service.SignUp(payload)
+	token, err := h.service.SignUp(c.Request.Context(), payload)
 	if err != nil {
 		c.Error(err)
 		return
@@ -50,7 +50,7 @@ func (h *authHandler) SignIn(c *gin.Context) {
 		return
 	}
 
-	token, err := h.service.SignIn(payload)
+	token, err := h.service.SignIn(c.Request.Context(), payload)
 	if err != nil {
 		c.Error(err)
 		return
