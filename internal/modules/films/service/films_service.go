@@ -73,6 +73,10 @@ func (s *filmsService) GetAll() (*[]model.Film, error) {
 		return nil, err
 	}
 
+	if films == nil || len(*films) == 0 {
+		return &[]model.Film{}, nil
+	}
+
 	return films, nil
 }
 
@@ -83,6 +87,10 @@ func (s *filmsService) GetById(id string) (*model.Film, error) {
 	}
 
 	if film == nil {
+		return nil, exception.NewException("film not found", http.StatusNotFound)
+	}
+
+	if film.Deleted && film.DeletedAt != nil {
 		return nil, exception.NewException("film not found", http.StatusNotFound)
 	}
 
