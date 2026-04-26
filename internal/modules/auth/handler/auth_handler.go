@@ -8,7 +8,6 @@ import (
 	authdto "github.com/rms-diego/book-my-session/internal/modules/auth/dto"
 	authservice "github.com/rms-diego/book-my-session/internal/modules/auth/service"
 	"github.com/rms-diego/book-my-session/internal/utils/validation"
-	"github.com/rms-diego/book-my-session/pkg/config"
 )
 
 type authHandler struct {
@@ -37,7 +36,7 @@ func (h *authHandler) SignUp(c *gin.Context) {
 	}
 
 	exp := int(time.Now().Add(time.Hour * 12).Unix())
-	c.SetCookie("Authorization", *token, exp, "/", config.Env.COOKIE_DOMAIN, false, true)
+	c.SetCookie("Authorization", *token, exp, "/", "", false, true)
 	c.JSON(http.StatusOK, gin.H{"token": token})
 }
 
@@ -56,6 +55,6 @@ func (h *authHandler) SignIn(c *gin.Context) {
 		return
 	}
 
-	c.SetCookie("Authorization", *token, exp, "/", config.Env.COOKIE_DOMAIN, false, true)
+	c.SetCookie("Authorization", *token, exp, "/", "", false, true)
 	c.JSON(http.StatusOK, gin.H{"token": token})
 }
