@@ -6,6 +6,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/feature/s3/transfermanager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	appconfig "github.com/rms-diego/book-my-session/pkg/config"
@@ -24,14 +25,25 @@ type S3GatewayInterface interface {
 var S3Gateway S3GatewayInterface
 
 func newS3Gateway() (S3GatewayInterface, error) {
-	cfg, err := config.LoadDefaultConfig(context.Background())
+	cfg, err := config.LoadDefaultConfig(
+		context.Background(),
+		config.WithRegion(appconfig.Env.AWS_REGION),
+		config.WithCredentialsProvider(
+			credentials.NewStaticCredentialsProvider(
+				appconfig.Env.AWS_ACCESS_KEY_ID,
+				appconfig.Env.AWS_SECRET_ACCESS_KEY,
+				"",
+			),
+		),
+	)
+
 	if err != nil {
 		return nil, err
 	}
 
 	client := s3.NewFromConfig(cfg)
 
-	return &s3Gateway{client: client, bucket: appconfig.Env.S3_BUCKET}, nil
+	return &s3Gateway{client: client, bucket: appconfig.Env.AWS_S3_BUCKET}, nil
 }
 
 func Init() error {
@@ -52,6 +64,7 @@ func (g *s3Gateway) Upload(ctx context.Context, file io.Reader, filename string)
 		Key:    aws.String(filename),
 		Body:   file,
 	})
+
 	if err != nil {
 		return nil, err
 	}
