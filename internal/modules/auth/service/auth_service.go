@@ -91,7 +91,7 @@ func (s *authService) SignIn(ctx context.Context, data authdto.SignInRequest) (*
 }
 
 func (s *authService) RefreshToken(ctx context.Context, strToken string) (*string, error) {
-	claims, err := token.DecodeToken(strToken)
+	claims, err := token.ValidateAndDecodeToken(strToken)
 	if err != nil {
 		return nil, err
 	}

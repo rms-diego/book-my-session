@@ -38,7 +38,7 @@ func GenerateToken(payload model.User) (string, error) {
 	return t.SignedString([]byte(config.Env.JWT_SECRET))
 }
 
-func DecodeToken(tokenString string) (*UserClaims, error) {
+func ValidateAndDecodeToken(tokenString string) (*UserClaims, error) {
 	claims := &UserClaims{}
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (any, error) {
 		return []byte(config.Env.JWT_SECRET), nil
@@ -54,14 +54,6 @@ func DecodeToken(tokenString string) (*UserClaims, error) {
 	}
 
 	return userClaims, nil
-}
-
-func ValidateToken(tokenString string) bool {
-	claims := jwt.MapClaims{}
-	_, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (any, error) {
-		return []byte(config.Env.JWT_SECRET), nil
-	})
-	return err == nil
 }
 
 func FromContext(ctx context.Context) (*UserClaims, bool) {

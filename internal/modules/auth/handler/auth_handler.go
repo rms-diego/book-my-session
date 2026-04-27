@@ -23,6 +23,8 @@ func NewAuthHandler(service authservice.AuthService) AuthHandler {
 	return &authHandler{service}
 }
 
+const expires = 12 * time.Hour
+
 func (h *authHandler) SignUp(c *gin.Context) {
 	var payload authdto.SignUpRequest
 	if err := validation.BindAndValidateBody(c, &payload); err != nil {
@@ -35,13 +37,12 @@ func (h *authHandler) SignUp(c *gin.Context) {
 		return
 	}
 
-	exp := int(time.Now().Add(time.Hour * 12).Unix())
+	exp := int(time.Now().Add(expires).Unix())
 	c.SetCookie("Authorization", *token, exp, "/", "", false, true)
 	c.JSON(http.StatusOK, gin.H{"token": token})
 }
 
 func (h *authHandler) SignIn(c *gin.Context) {
-	exp := int(time.Now().Add(time.Hour * 12).Unix())
 
 	var payload authdto.SignInRequest
 	if err := validation.BindAndValidateBody(c, &payload); err != nil {
@@ -55,6 +56,7 @@ func (h *authHandler) SignIn(c *gin.Context) {
 		return
 	}
 
+	exp := int(time.Now().Add(expires).Unix())
 	c.SetCookie("Authorization", *token, exp, "/", "", false, true)
 	c.JSON(http.StatusOK, gin.H{"token": token})
 }

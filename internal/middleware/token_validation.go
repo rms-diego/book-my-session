@@ -17,7 +17,7 @@ func ValidationToken() gin.HandlerFunc {
 			return
 		}
 
-		claims, err := token.DecodeToken(t)
+		claims, err := token.ValidateAndDecodeToken(t)
 		if err != nil {
 			c.Error(exception.NewException("Unauthorized", http.StatusUnauthorized))
 			c.Abort()
