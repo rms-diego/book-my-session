@@ -120,7 +120,7 @@ func (s *filmsService) UploadThumbnail(ctx context.Context, id string, data *mul
 
 	defer f.Close()
 
-	filename := fmt.Sprintf("%s.%s", id, data.Filename)
+	filename := fmt.Sprintf("movies-thumbnail/%s.%s", id, data.Filename)
 	url, err := s.s3gateway.Upload(ctx, f, filename)
 	if err != nil {
 		return err

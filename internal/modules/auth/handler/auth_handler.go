@@ -39,7 +39,7 @@ func (h *authHandler) SignUp(c *gin.Context) {
 
 	exp := int(time.Now().Add(expires).Unix())
 	c.SetCookie("Authorization", *token, exp, "/", "", false, true)
-	c.JSON(http.StatusOK, gin.H{"token": token})
+	c.Status(http.StatusOK)
 }
 
 func (h *authHandler) SignIn(c *gin.Context) {
